@@ -146,7 +146,7 @@ class Order(models.Model):
         max_length=100,
         blank=True,
     )
-    total_price = models.DecimalField('Сумма заказа', blank=True, max_digits=10, decimal_places=2)
+    total_price = models.DecimalField('Сумма заказа', max_digits=10, decimal_places=2)
 
     class Meta:
         verbose_name = 'Заказ'
@@ -157,19 +157,19 @@ class Order(models.Model):
 
     def get_total_cost(self):
         # общая сумма заказа
-        return sum(item.get_cost() for item in self.order_items.all())
+        return sum(item.get_cost() for item in self.items.all())
 
 
 class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
-        related_name='order_items',
+        related_name='items',
         verbose_name="Заказы",
         on_delete=models.CASCADE,
     )
     product = models.ForeignKey(
         Product,
-        related_name='product_items',
+        related_name='products',
         verbose_name="Продукты",
         on_delete=models.CASCADE,
     )
