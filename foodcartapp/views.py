@@ -5,6 +5,8 @@ from django.templatetags.static import static
 
 from .models import Product, OrderItem, Order
 from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 
 def create_order(order_data):
@@ -27,6 +29,7 @@ def create_order(order_data):
     price = order.get_total_cost()
     order.total_price = price
     order.save()
+    print('OK OK OK OK OKKKKKYE')
     return order
 
 
@@ -82,14 +85,13 @@ def product_list_api(request):
     })
 
 
+@api_view(['POST'])
 def register_order(request):
     try:
-        order_data = json.loads(request.body.decode())
+        order_data = json.loads(request.body)
         create_order(order_data)
-        print(order_data)
     except ValueError:
-        return JsonResponse({
+        return Response({
             'error': 'bla bla bla',
         })
-    # TODO это лишь заглушка
-    return JsonResponse({})
+    return Response(order_data)
