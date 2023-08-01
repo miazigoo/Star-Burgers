@@ -17,14 +17,16 @@
       <th>Клиент</th>
       <th>Телефон</th>
       <th>Адрес доставки</th>
+      <th>Сумма заказа</th>
     </tr>
 
     {% for item in order_items %}
       <tr>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
+        <td>- {{ item.pk }}</td>
+        <td>- {{ item.lastname }}</td>
+        <td>- {{ item.phone_number }}</td>
+        <td>- {{ item.address }}</td>
+        <td>- {{ item.total_price }}</td>
       </tr>
     {% endfor %}
    </table>
