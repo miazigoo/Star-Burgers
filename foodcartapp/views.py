@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 
+from .serializer import OrderSerializer
+
 
 def create_order(order_data):
     order = Order.objects.create(
@@ -87,59 +89,26 @@ def product_list_api(request):
     })
 
 
-def validate_fields(order_data):
-    def check_phonenumber(phone_number):
-        try:
-            parsed_number = phonenumbers.parse(phone_number, "RU")
-            return phonenumbers.is_valid_number(parsed_number)
-        except phonenumbers.NumberParseException:
-            return False
-
-    required_fields = ['firstname', 'lastname', 'phonenumber', 'address']
-    for field in required_fields:
-        if not order_data.get(field):
-            return Response({'error': f'Отсутствует обязательное поле "{field}".'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        elif not isinstance(order_data[field], str):
-            return Response({'error': f'"{field}": Это поле не может быть пустым.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-    products = order_data.get('products')
-    if not products:
-        return Response({'error': 'Поле "products" не может быть пустым'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    elif not isinstance(products, list):
-        return Response({'error': 'products: Ожидался list со значениями, но был получен "str".'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    elif len(products) == 0:
-        return Response({'error': 'Список продуктов не может быть пустым'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    else:
-        for product in products:
-            if not isinstance(product, dict):
-                return Response({'error': 'Ошибка в списке продуктов'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            elif 'product' not in product or 'quantity' not in product:
-                return Response({'error': 'Недостаточно данных в списке продуктов.'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            elif not Product.objects.filter(id=product['product']).exists():
-                return Response({'error': f'products: Недопустимый первичный ключ "{product["product"]}"'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-    if not check_phonenumber(order_data.get('phonenumber')):
-        return Response({'error': 'Введен некорректный номер телефона.'},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    return None
-
-
 @api_view(['POST'])
 def register_order(request):
-    validation_result = validate_fields(request.data)
-    if validation_result:
-        return validation_result
+    serializer = OrderSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        order = Order.objects.create(
+            firstname=serializer.validated_data['firstname'],
+            lastname=serializer.validated_data['lastname'],
+            phone_number=serializer.validated_data['phonenumber'],
+            address=serializer.validated_data['address'],
+            total_price=0,
+        )
 
-    create_order(request.data)
-    return Response(request.data)
+        product_fields = serializer.validated_data['products']
+        products = [OrderItem(order=order, **fields) for fields in product_fields]
+        OrderItem.objects.bulk_create(products)
+        # Сумма заказа:
+        order.total_price = order.get_total_cost()
+        order.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
