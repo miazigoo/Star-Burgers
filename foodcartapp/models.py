@@ -161,10 +161,7 @@ class Order(models.Model):
 
     def get_total_cost(self):
         # общая сумма заказа
-        if not self.total_price:
-            return sum(item.get_cost() for item in self.items.all())
-        else:
-            return self.total_price
+        return sum(item.get_cost() for item in self.items.all())
 
 
 class OrderItem(models.Model):
@@ -200,7 +197,4 @@ class OrderItem(models.Model):
         return f"{self.order.phone_number} - {self.product.name}"
 
     def get_cost(self):
-        if not self.price:
-            return self.product.price * self.quantity
-        else:
-            return self.price
+        return self.product.price * self.quantity
