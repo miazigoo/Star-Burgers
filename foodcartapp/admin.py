@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import Sum
+from django.http import HttpResponseRedirect
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
@@ -36,6 +37,13 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     # readonly_fields = ['total_price']
+
+    def response_change(self, request, obj):
+        res = super(OrderAdmin, self).response_post_save_change(request, obj)
+        if "next" in request.GET:
+            return HttpResponseRedirect(request.GET['next'])
+        else:
+            return res
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
