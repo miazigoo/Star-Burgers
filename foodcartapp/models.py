@@ -169,7 +169,18 @@ class Order(models.Model):
         validators=[MinValueValidator(
             limit_value=0
         )])
-    comment = models.TextField(blank=True, verbose_name='Комментарий к заказу')
+    comment = models.TextField(
+        blank=True, verbose_name='Комментарий к заказу'
+    )
+    registration_date = models.DateTimeField(
+        blank=True, null=True, verbose_name='Дата регистрации', db_index=True, auto_now=True
+    )
+    call_date = models.DateTimeField(
+        blank=True, null=True, verbose_name='Дата звонка', db_index=True
+    )
+    delivery_date = models.DateTimeField(
+        blank=True, null=True, verbose_name='Дата доставки', db_index=True
+    )
 
     class Meta:
         verbose_name = 'Заказ'

@@ -37,6 +37,7 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     # readonly_fields = ['total_price']
+    readonly_fields = ['registration_date']
 
     def response_change(self, request, obj):
         res = super(OrderAdmin, self).response_post_save_change(request, obj)
