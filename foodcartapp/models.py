@@ -125,6 +125,20 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+    CASH = 'CASH'
+    ELECTRONICALLY = 'ELECTRON'
+    PAY_TYPE = [
+        (CASH, 'Наличными'),
+        (ELECTRONICALLY, 'Электронно'),
+    ]
+    pay = models.CharField(
+        'Способ оплаты',
+        choices=PAY_TYPE,
+        max_length=20,
+        db_index=True,
+
+    )
+
     NEW = 'new'
     COOKING = 'cooking'
     DELIVERY = 'delivery'
