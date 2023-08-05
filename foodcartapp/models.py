@@ -125,6 +125,23 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+    NEW = 'new'
+    COOKING = 'cooking'
+    DELIVERY = 'delivery'
+    READY = 'ready'
+    ORDER_STATUS = [
+        (NEW, 'Необработанный'),
+        (COOKING, 'Готовится'),
+        (DELIVERY, 'Доставка'),
+        (READY, 'Доставлен'),
+    ]
+    status = models.CharField(
+        'Статус заказа',
+        choices=ORDER_STATUS,
+        default=NEW,
+        max_length=20,
+        db_index=True
+    )
     firstname = models.CharField(
         'Имя',
         max_length=90
