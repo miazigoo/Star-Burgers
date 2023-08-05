@@ -36,8 +36,7 @@ class OrderSerializer(serializers.ModelSerializer):
             phone_number=validated_data['phonenumber'],
             firstname=validated_data['firstname'],
             lastname=validated_data['lastname'],
-            address=validated_data['address'],
-            total_price=0
+            address=validated_data['address']
         )
         products = validated_data['products']
 

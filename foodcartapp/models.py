@@ -165,9 +165,11 @@ class Order(models.Model):
         'Сумма заказа',
         max_digits=10,
         decimal_places=2,
+        default=0,
         validators=[MinValueValidator(
             limit_value=0
         )])
+    comment = models.TextField(blank=True, verbose_name='Комментарий к заказу')
 
     class Meta:
         verbose_name = 'Заказ'
@@ -199,10 +201,10 @@ class OrderItem(models.Model):
         'Сумма',
         max_digits=10,
         decimal_places=2,
+        default=0,
         validators=[MinValueValidator(
             limit_value=0
         )],
-        null=True
     )
 
     class Meta:
