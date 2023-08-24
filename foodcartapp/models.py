@@ -32,8 +32,8 @@ class ProductQuerySet(models.QuerySet):
     def available(self):
         products = (
             RestaurantMenuItem.objects
-                .filter(availability=True)
-                .values_list('product')
+            .filter(availability=True)
+            .values_list('product')
         )
         return self.filter(pk__in=products)
 
@@ -125,82 +125,32 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
-# class OrderQuerySet(models.QuerySet):
-#     def prefetch_items(self):
-#         orders = Order.objects.exclude(status=Order.READY).order_by('-status').select_related(
-#             'restaurant').prefetch_related('items__product')
-#
-#         menu_items = RestaurantMenuItem.objects.filter(availability=True).values('restaurant', 'product')
-#         restaurants = Restaurant.objects.in_bulk([item['restaurant'] for item in menu_items])
-#
-#         orders = orders.annotate(product_count=Count('items__product'))
-#
-#         for order in orders:
-#             if order.restaurant is None:
-#                 order_restaurants = []
-#                 order_products = order.items.all()
-#                 for restaurant in restaurants:
-#                     restaurants_possible = True
-#                     for order_product in order_products:
-#                         restaurants_for_product = menu_items.filter(product=order_product.product,
-#                                                                     restaurant=restaurants[restaurant])
-#                         if not restaurants_for_product:
-#                             restaurants_possible = False
-#                     if restaurants_possible:
-#                         order_restaurants.append(restaurants[restaurant])
-#
-#                 if order_restaurants:
-#                     order.restaurant_possible = order_restaurants
-#         return orders
-
 class OrderQuerySet(models.QuerySet):
     def prefetch_items(self):
+        orders = Order.objects.exclude(status=Order.READY).order_by('-status').select_related(
+            'restaurant').prefetch_related('items', 'items__product').annotate(product_count=Count('items__product'))
+
         menu_items = RestaurantMenuItem.objects.filter(availability=True).values('restaurant', 'product')
-        restaurants = Restaurant.objects.in_bulk(set(item['restaurant'] for item in menu_items))
+        restaurants = Restaurant.objects.in_bulk([item['restaurant'] for item in menu_items])
 
-        orders = self.exclude(status=Order.READY).order_by('-status')
+        # orders = orders.annotate(product_count=Count('items__product'))
 
-        orders = orders.select_related('restaurant').prefetch_related(
-            Prefetch('items__product', queryset=Product.objects.only('id', 'name'))).annotate(
-            product_count=Count('items__product'))
-
-        # Получаем все идентификаторы заказов
-        order_ids = [order.pk for order in orders]
-        order_items = OrderItem.objects.filter(order_id__in=order_ids).values('order_id', 'product_id')
-
-        # Создаем словарь для хранения связей между заказами и продуктами
-        order_products = {}
-        for item in order_items:
-            order_id = item['order_id']
-            product_id = item['product_id']
-            if order_id not in order_products:
-                order_products[order_id] = []
-            order_products[order_id].append(product_id)
-
-        # Создаем словарь для хранения связей между заказами и ресторанами
-        order_restaurants = {}
-        for order_id, restaurant in restaurants.items():
-            restaurants_possible = True
-
-            if order_id in order_products:
-                order_product_ids = order_products[order_id]
-                for product_id in order_product_ids:
-                    if not menu_items.filter(product_id=product_id, restaurant=order_id).exists():
-                        restaurants_possible = False
-                        break
-
-            if restaurants_possible:
-                if order_id not in order_restaurants:
-                    order_restaurants[order_id] = []
-                order_restaurants[order_id].append(restaurant)
-
-        # Присваиваем список ресторанов, доступных для каждого заказа
         for order in orders:
-            if order.pk in order_restaurants:
-                order.restaurant_possible = order_restaurants[order.pk]
-            else:
-                order.restaurant_possible = []
+            if order.restaurant is None:
+                order_restaurants = []
+                order_products = order.items.all()
+                for restaurant in restaurants:
+                    restaurants_possible = True
+                    for order_product in order_products:
+                        restaurants_for_product = menu_items.filter(product=order_product.product,
+                                                                    restaurant=restaurants[restaurant])
+                        if not restaurants_for_product:
+                            restaurants_possible = False
+                    if restaurants_possible:
+                        order_restaurants.append(restaurants[restaurant])
 
+                if order_restaurants:
+                    order.restaurant_possible = order_restaurants
         return orders
 
 
@@ -295,6 +245,10 @@ class Order(models.Model):
     def get_total_cost(self):
         # общая сумма заказа
         return sum(item.get_cost() for item in self.items.all())
+
+    @staticmethod
+    def prefetch_products():
+        menu_items = RestaurantMenuItem.objects.filter(availability=True)
 
 
 class OrderItem(models.Model):
