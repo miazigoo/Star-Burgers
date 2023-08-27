@@ -51,5 +51,3 @@ class OrderSerializer(serializers.ModelSerializer):
         order.total_price = order.get_total_cost()
         order.save()
         return order
-
-# print(repr(OrderSerializer()))

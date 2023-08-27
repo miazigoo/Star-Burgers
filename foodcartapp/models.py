@@ -1,9 +1,10 @@
 import re
-from operator import attrgetter, itemgetter
 
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import Prefetch, Count
+from django.db.models import Count
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from phonenumber_field.modelfields import PhoneNumberField
 from geopy import distance
 from requests import HTTPError
@@ -133,21 +134,23 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
-def get_distance(apikey, place_from, place_to):
-    """
-    Возвращает расстояние между двумя точками в км
-    :param apikey: ключ для yandex api
-    :param place_from: начальная точка
-    :param place_to: конечная точка
-    :return: расстояние в км
-    """
-    try:
-        coords_from = fetch_coordinates(apikey, place_from)
-        coords_to = fetch_coordinates(apikey, place_to)
-        dist = distance.distance(coords_from, coords_to).km
-        return dist
-    except HTTPError as e:
-        return None
+class Place(models.Model):
+    name = models.CharField(
+        'название',
+        max_length=400,
+        db_index=True,
+        unique=True,
+    )
+    lon = models.FloatField(
+        'широта'
+    )
+    lat = models.FloatField(
+        'долгота'
+    )
+
+    class Meta:
+        verbose_name = 'место'
+        verbose_name_plural = 'места'
 
 
 def atoi(text):
@@ -160,7 +163,35 @@ def natural_keys(text):
     http://nedbatchelder.com/blog/200712/human_sorting.html
     (See Toothy's implementation in the comments)
     """
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
+    return [atoi(c) for c in re.split(r'[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)', text)]
+
+
+def get_place_coordinates(api_key, place):
+    try:
+        place = get_object_or_404(Place, name=place)
+        lon, lat = place.lon, place.lat
+        return lon, lat
+    except Http404:
+        lon, lat = fetch_coordinates(api_key, place)
+        Place.objects.create(name=place, lon=lon, lat=lat)
+        return lon, lat
+
+
+def get_distance(apikey, place_from, place_to):
+    """
+    Возвращает расстояние между двумя точками в км
+    :param apikey: ключ для yandex api
+    :param place_from: начальная точка
+    :param place_to: конечная точка
+    :return: расстояние в км
+    """
+    try:
+        coords_from = get_place_coordinates(apikey, place_from)
+        coords_to = get_place_coordinates(apikey, place_to)
+        dist = distance.distance(coords_from, coords_to).km
+        return dist
+    except HTTPError as e:
+        return 0
 
 
 class OrderQuerySet(models.QuerySet):
@@ -194,7 +225,7 @@ class OrderQuerySet(models.QuerySet):
                     for restaurant in order_restaurants:
                         div_distance = restaurant['distance']
                         restaurant["restaurant"].distance = div_distance
-                        delivery_restaurants.append(f'{restaurant["restaurant"].name}, {round(div_distance, 0)} км.')
+                        delivery_restaurants.append(f'{restaurant["restaurant"].name} - {round(div_distance, 0)}')
                 delivery_restaurants.sort(key=natural_keys)
                 order.restaurant_possible = delivery_restaurants
         return orders

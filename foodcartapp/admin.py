@@ -5,7 +5,7 @@ from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 
-from .models import Product
+from .models import Product, Place
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
@@ -17,7 +17,6 @@ from .models import OrderItem
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    # readonly_fields = ('price',)
 
 
 @admin.register(Order)
@@ -36,7 +35,6 @@ class OrderAdmin(admin.ModelAdmin):
         OrderItemInline
     ]
 
-    # readonly_fields = ['total_price']
     readonly_fields = ['registration_date']
 
     def response_change(self, request, obj):
@@ -144,4 +142,9 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductCategory)
 class ProductAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Place)
+class PlaceAdmin(admin.ModelAdmin):
     pass
