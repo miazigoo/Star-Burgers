@@ -15,25 +15,15 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     products = OrderProductSerializer(many=True, allow_empty=False, write_only=True)
-    phonenumber = serializers.CharField(validators=[RegexValidator(r'^\+\d{11}$')])
 
     class Meta:
         model = Order
         fields = ('products', 'phonenumber', 'firstname', 'lastname', 'address')
 
-    def validate_phonenumber(self, phonenumber):
-        if not phonenumber:
-            raise serializers.ValidationError('Это поле обязательно')
-        try:
-            validate_international_phonenumber(phonenumber)
-        except ValidationError:
-            raise serializers.ValidationError('Введен некорректный номер телефона.')
-        return phonenumber
-
     @transaction.atomic
     def create(self, validated_data):
         order = Order.objects.create(
-            phone_number=validated_data['phonenumber'],
+            phonenumber=validated_data['phonenumber'],
             firstname=validated_data['firstname'],
             lastname=validated_data['lastname'],
             address=validated_data['address'],

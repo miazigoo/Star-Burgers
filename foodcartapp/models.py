@@ -273,7 +273,7 @@ class Order(models.Model):
         db_index=True
     )
 
-    phone_number = PhoneNumberField(
+    phonenumber = PhoneNumberField(
         verbose_name='Телефон',
         db_index=True
     )
