@@ -1,7 +1,7 @@
 import re
 
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -341,7 +341,12 @@ class OrderItem(models.Model):
         verbose_name="Продукты",
         on_delete=models.CASCADE,
     )
-    quantity = models.IntegerField('Количество')
+    quantity = models.IntegerField('Количество',
+                                   validators=[
+                                       MaxValueValidator(100),
+                                       MinValueValidator(1)
+                                   ]
+                                   )
     price = models.DecimalField(
         'Сумма',
         max_digits=10,
