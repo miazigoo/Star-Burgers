@@ -88,7 +88,7 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
+    if serializer.is_valid():
         serializer.create(serializer.validated_data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
