@@ -346,7 +346,6 @@ class OrderItem(models.Model):
         'Сумма',
         max_digits=10,
         decimal_places=2,
-        default=0,
         validators=[MinValueValidator(
             limit_value=0
         )],
