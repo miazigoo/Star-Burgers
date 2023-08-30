@@ -10,29 +10,6 @@ from rest_framework import status
 from .serializer import OrderSerializer
 
 
-def create_order(order_data):
-    order = Order.objects.create(
-        phone_number=order_data['phonenumber'],
-        firstname=order_data['firstname'],
-        lastname=order_data['lastname'],
-        address=order_data['address'],
-        total_price=0,
-
-    )
-
-    for product_item in order_data['products']:
-        product = get_object_or_404(Product, pk=int(product_item['product']))
-        OrderItem.objects.create(
-            order=order,
-            product=product,
-            quantity=product_item['quantity'],
-        )
-    price = order.get_total_cost()
-    order.total_price = price
-    order.save()
-    return order
-
-
 def banners_list_api(request):
     # FIXME move data to db?
     return JsonResponse([

@@ -1,7 +1,5 @@
-from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+
 from django.db import transaction
-from phonenumber_field.validators import validate_international_phonenumber
 from rest_framework import serializers
 
 from .models import Order, OrderItem
