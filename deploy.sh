@@ -1,6 +1,7 @@
 #!/bin/bash
 # start with the parameter ROLLBAR_ACCESS_TOKEN
 echo "Start, deploy Star Burger!"
+deploy_complete=true
 
 set -e
 
@@ -18,7 +19,6 @@ sudo systemctl reload nginx
 
 last_commit=$(git rev-parse HEAD);
 
-echo "Last commit {$last_commit}"
-curl -H "X-Rollbar-Access-Token: $1" -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d '{"environment": "Star_burger", "revision": "{$last_commit}", "rollbar_name": "zapivahin", "local_username": "circle-ci", "comment": "star burger deployment", "status": "succeeded"}'
 echo "Deploy completed successfully"
-
+echo "Last commit {$last_commit}"
+curl -H "X-Rollbar-Access-Token: $1" -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d '{"environment": "Star_burger", "revision": "{$last_commit}", "rollbar_name": "kasper6024", "local_username": "circle-ci", "comment": "star burger deployment", "status": "succeeded"}'
