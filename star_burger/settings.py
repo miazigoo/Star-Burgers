@@ -20,9 +20,6 @@ YANDEX_KEY = env('YANDEX_KEY')
 
 POST_SERVER_ITEM_ACCESS_TOKEN = env('POST_SERVER_ITEM_ACCESS_TOKEN')
 
-DB_USER = env('DB_USER', 'admin')
-DB_PASSWORD = env('DB_PASSWORD', 'QwsAzx@2000')
-
 INSTALLED_APPS = [
     'foodcartapp.apps.FoodcartappConfig',
     'restaurateur.apps.RestaurateurConfig',
@@ -48,6 +45,9 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
 
 ROOT_URLCONF = 'star_burger.urls'
 
@@ -90,14 +90,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'burger',
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': 'localhost',
-        'PORT': '',
-    }
+            'default': dj_database_url.config(default=env('DB_URL'))
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -136,13 +129,15 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "bundles"),
 ]
 
-ROLLBAR = {
-    'access_token': POST_SERVER_ITEM_ACCESS_TOKEN,
-    'environment': 'development' if DEBUG else 'production',
-    'code_version': '1.0',
-    'root': BASE_DIR,
-    'ignorable_404_urls': (
-        re.compile('/index\.php'),
-        re.compile('/foobar'),
-    ),
-}
+if POST_SERVER_ITEM_ACCESS_TOKEN:
+    ROLLBAR = {
+	    'access_token': POST_SERVER_ITEM_ACCESS_TOKEN,
+	    'environment': 'production',
+	    'code_version': '1.0',
+	    'root': BASE_DIR,
+	    'ignorable_404_urls': (
+		re.compile('/index\.php'),
+		re.compile('/foobar'),
+	    ),
+    }
+

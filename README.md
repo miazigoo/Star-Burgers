@@ -59,9 +59,21 @@ pip install -r requirements.txt
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 ```
 
+
+Определите переменную окружения `ALLOWED_HOSTS` в файле `.env`
+```sh
+ALLOWED_HOSTS=your_domain_or_ip
+```
+
 Определите переменную окружения `YANDEX_KEY` в файле `.env`. Получить ключ по этой [ссылке](https://developer.tech.yandex.ru/)
 ```sh
 YANDEX_KEY=...
+```
+
+
+Определите переменную окружения `DB_URL` в файле `.env`. Строка подключения к БД 
+```sh
+DB_URL=postgresql://[user[:password]@][netloc][:port][/dbname]
 ```
 
 Определите переменную окружения `POST_SERVER_ITEM_ACCESS_TOKEN` в файле `.env`.

@@ -8,4 +8,7 @@ djangorestframework~=3.14
 geopy~=2.3.0
 requests~=2.31.0
 rollbar~=0.16.3
+<<<<<<< Updated upstream
 psycopg2~=2.9.9
+=======
+>>>>>>> Stashed changes
