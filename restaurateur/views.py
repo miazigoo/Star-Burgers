@@ -70,7 +70,7 @@ def is_manager(user):
 def view_products(request):
     restaurants = list(Restaurant.objects.order_by('name'))
     products = list(Product.objects.prefetch_related('menu_items'))
-
+    
     products_with_restaurant_availability = []
     for product in products:
         availability = {item.restaurant_id: item.availability for item in product.menu_items.all()}
