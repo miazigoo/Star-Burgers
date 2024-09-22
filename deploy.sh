@@ -9,6 +9,7 @@ git pull
 source venv/bin/activate
 python manage.py migrate --noinput
 npm ci
+./node_modules/.bin/parcel bundles-src/index.js --dist-dir bundles --public-url="./"
 
 pip install -r requirements.txt
 python manage.py collectstatic --noinput
