@@ -1,7 +1,6 @@
 #!/bin/bash
 # start with the parameter ROLLBAR_ACCESS_TOKEN
 echo "Start, deploy Star Burger!"
-deploy_complete=true
 
 set -e
 
